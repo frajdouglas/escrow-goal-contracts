@@ -53,13 +53,49 @@ async function main() {
 
   // Helper to create a future timestamp relative to the *current blockchain time*
   // This is crucial because blockchain time can be advanced independently of system time.
-  const getFutureTimestampFromBlock = async (daysInFuture: number): Promise<number> => {
-    const latestBlock = await ethers.provider.getBlock("latest");
-    if (!latestBlock) throw new Error("Could not get latest block timestamp");
-    const currentBlockTimestamp = latestBlock.timestamp; // Current blockchain timestamp in seconds
-    // Ensure the result is an integer by using Math.floor()
-    return Math.floor(currentBlockTimestamp + (daysInFuture * 24 * 60 * 60));
-  };
+    const getFutureTimestampFromBlock = async (daysInFuture: number): Promise<number> => {
+        const latestBlock = await ethers.provider.getBlock("latest");
+        if (!latestBlock) throw new Error("Could not get latest block timestamp");
+
+        const currentBlockTimestamp = latestBlock.timestamp; // Current blockchain timestamp in seconds
+        const secondsToAdd = daysInFuture * 24 * 60 * 60;
+        const calculatedFutureTimestamp = currentBlockTimestamp + secondsToAdd;
+        const flooredFutureTimestamp = Math.floor(calculatedFutureTimestamp);
+
+
+        console.log(`
+        --- Timestamp Calculation Details ---`);
+        console.log(`  Current Blockchain Timestamp (Unix): ${currentBlockTimestamp}`);
+        console.log(`  Current Blockchain Date/Time: ${new Date(currentBlockTimestamp * 1000).toLocaleString()}`);
+        console.log(`  Days to Add: ${daysInFuture}`);
+        console.log(`  Seconds to Add: ${secondsToAdd}`);
+        console.log(`  Calculated Future Timestamp (Unix, before floor): ${calculatedFutureTimestamp}`);
+        console.log(`  Calculated Future Date/Time (before floor): ${new Date(calculatedFutureTimestamp * 1000).toLocaleString()}`);
+        console.log(`  Floored Future Timestamp (Unix, after floor): ${flooredFutureTimestamp}`);
+        console.log(`  Floored Future Date/Time (after floor): ${new Date(flooredFutureTimestamp * 1000).toLocaleString()}`);
+        console.log(`  Did Math.floor change the value? ${calculatedFutureTimestamp !== flooredFutureTimestamp ? 'YES' : 'NO'}`);
+        console.log(`-----------------------------------`);
+
+
+        return flooredFutureTimestamp;
+    };
+
+
+
+
+//   const getFutureTimestampFromBlock = async (daysInFuture: number): Promise<number> => {
+//     const latestBlock = await ethers.provider.getBlock("latest");
+//     if (!latestBlock) throw new Error("Could not get latest block timestamp");
+//     const currentBlockTimestamp = latestBlock.timestamp; // Current blockchain timestamp in seconds
+//     console.log(`Current blockchain timestamp: ${new Date(currentBlockTimestamp * 1000).toLocaleString()}`);
+//         console.log('days in future', daysInFuture);
+// console.log('future timestamp before rounding', currentBlockTimestamp + (daysInFuture * 24 * 60 * 60))
+// console.log('future timestamp before rounding', currentBlockTimestamp + (daysInFuture * 24 * 60 * 60))
+
+//     // Ensure the result is an integer by using Math.floor()
+//     return Math.floor(currentBlockTimestamp + (daysInFuture * 24 * 60 * 60));
+//   };
+//   console.log(getFutureTimestampFromBlock.toString(), 'getFutureTimestampFromBlock');
 
   // Helper to create a dummy goalHash (replace with real hashing logic in dApp)
   const createDummyGoalHash = (description: string): string => {
@@ -142,7 +178,7 @@ async function main() {
 
   // --- Scenario D: Failed Goal with Funds Withdrawn by Failure Recipient ---
   console.log("\n[Scenario D]: Creating Goal, Expiring it, and Withdrawing Funds...");
-  const goalD_description = "Learn a new language in 30 days";
+  const goalD_description = "Learn a new language in 1 day";
   const goalD_escrow = ethers.parseEther("0.03");
   // Create with a short future expiry (e.g., 1 day from current blockchain time AFTER C's jump)
   const goalD_shortFutureExpiry = await getFutureTimestampFromBlock(1);
