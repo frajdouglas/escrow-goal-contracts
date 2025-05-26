@@ -13,14 +13,14 @@ contract GoalFactory {
         uint256 escrowAmount;
         uint256 expiry;
         bytes32 goalHash;
-        uint8 status; // 0: Pending, 1: Met, 4: Funds Withdrawn (Success), 5: Funds Withdrawn (Failure/Expiry)
+        uint8 status; // 0: Pending, 1: Met, 4: Withdrawn (Success), 5: Withdrawn (Failure/Expired)
     }
 
     mapping(uint256 => Goal) public goals;
 
     event GoalCreated(
-        uint256 uniqueId,
-        address creator,
+        uint256 indexed uniqueId,
+        address indexed creator,
         address referee,
         address successRecipient,
         address failureRecipient,
@@ -67,7 +67,6 @@ contract GoalFactory {
             "Invalid addresses"
         );
         require(_escrowAmount > 0, "Escrow amount must be > 0");
-
         goals[goalCounter] = Goal({
             successRecipient: _successRecipient,
             failureRecipient: _failureRecipient,
@@ -100,8 +99,10 @@ contract GoalFactory {
         onlyReferee(_goalId)
         onlyPending(_goalId)
     {
+
         Goal storage goal = goals[_goalId];
         goal.status = 1;
+
         emit GoalStatusChanged(_goalId, 1, block.timestamp);
 
         payable(goal.successRecipient).transfer(goal.escrowAmount);
@@ -112,12 +113,15 @@ contract GoalFactory {
     }
 
     function withdrawFunds(uint256 _goalId) external onlyFailureRecipient(_goalId) {
+
         Goal storage goal = goals[_goalId];
         require(goal.escrowAmount > 0, "No funds to withdraw");
+
         require(block.timestamp > goal.expiry, "Goal has not yet expired");
 
         if (goal.status == 0) {
             goal.status = 5;
+
             emit GoalStatusChanged(_goalId, 5, block.timestamp);
 
             payable(goal.failureRecipient).transfer(goal.escrowAmount);
@@ -135,6 +139,7 @@ contract GoalFactory {
     }
 
     // --- Modifiers ---
+
     modifier onlyReferee(uint256 _goalId) {
         require(msg.sender == goals[_goalId].referee, "Only referee can call this");
         _;
