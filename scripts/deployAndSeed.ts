@@ -44,7 +44,7 @@ async function main() {
   console.log(`✅ GoalFactory deployed to: ${contractAddress}`);
 
     fs.writeFileSync(
-        "./deployed/localhost.json",
+        "./deployed/contactAddress.json",
         JSON.stringify({ contractAddress }, null, 2)
     );
 
