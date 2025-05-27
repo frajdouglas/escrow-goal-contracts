@@ -1,5 +1,3 @@
-// scripts/deploy.ts
-
 import { ethers } from "hardhat";
 
 async function main() {
@@ -26,7 +24,6 @@ async function main() {
   // --- 4. Get and Log the Deployed Address ---
   const contractAddress = await goalFactory.getAddress();
   console.log(`✅ GoalFactory deployed to: ${contractAddress}`);
-
   console.log("\n======================================");
   console.log("🎉 Deployment Script Finished Successfully 🎉");
   console.log("======================================");
